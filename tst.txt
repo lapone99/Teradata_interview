@@ -1,0 +1,80 @@
+api_key - a004a9175ddec3580787b6ecbaf39182
+token - 42d2368aac0eb07f6e12a2d627054fd927540dc696e1d486b04fe2fd0c7c560a
+
+
+1) 
+count(
+    filter
+    (
+        filter(
+            filter( 
+                    get("Account.contact_history")
+                    , "contact_time"
+                    , formatDateTime("day")
+                    , greaterThan(time(now, 30,"day","past")) 
+                )
+                , "channel"
+                , "Call Center")
+        , "product"
+        , "ТП МР"
+    )
+) > 0
+&&
+count( 
+    filter( 
+        get(Account.active_services)
+        , service_id
+        , contains (list("11208","11220","18644"))
+    )
+)==0 //This expression returns true when there was calls from calls center to this user
+in the past 30 days and the user doesn't have services with id 11280, 11220, 18644
+
+2)
+set(
+    "RESPONSE", 
+    get("contact")
+) //set to variable response value from var contact 
+&& 
+set(
+    "M", 
+    get("Message")
+) 
+&& 
+set(
+    "M_ID"
+    , get(M, "ID")
+) 
+&& 
+count(
+    filter(
+        filter(
+            filter( 
+                get("Account.contact_history")
+                , "date_time"
+                , formatDateTime("day")
+                , greaterThan(time(now, 365,"day","past"))
+            )
+            , "message_id"
+            , M_ID 
+        )
+        , "RESPONSE"
+        , contains(list("Yes"))
+    )
+) == 0 // Here will be return false  when in the last year user was called with message
+from variable "Message", and user's response was yes to this message. In any other
+situations, let's say that there was no call with such message like in var "Message", or
+user's response was "No" or smth else
+
+
+Task #4:
+
+Task #5
+SELECT t1.SUNS_ID, t1.BALANCE_DATE AS BALANE_DATE_CURRENT, t1.BALANCE_AMT AS
+BALANCE_AMT_CURRENT, t2.BALANCE_DATE AS BALANCE_DATE_PREV, t2.BALANCE_AMT AS
+BALANCE_AMT_PREV
+FROM TEST t1
+INNER JOIN TEST t2
+ON t1.SUBS_ID=t2.SUBS_ID
+WHERE t1.BALANCE_DATE = CURRENT_DATE()
+AND t2.BALANCE_DATE=CURRENT_DATE - INTERVAL '1' DAY
+
